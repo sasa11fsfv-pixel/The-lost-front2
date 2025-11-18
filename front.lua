@@ -300,29 +300,47 @@ local function createMainMenu()
         title.Font = Enum.Font.GothamBold
         title.Parent = cf
         if name == "ESP" then
+            local mainBox = Instance.new("Frame")
+            mainBox.AnchorPoint = Vector2.new(0.5,0)
+            mainBox.Position = UDim2.new(0.5,0, 0,84)
+            mainBox.Size = UDim2.new(0,400,0,292)
+            mainBox.BackgroundColor3 = Color3.fromRGB(23,30,61)
+            mainBox.BackgroundTransparency = .15
+            mainBox.Parent = cf
+            Instance.new("UICorner", mainBox).CornerRadius = UDim.new(0,17)
+            
+            local titleESPLbl = Instance.new("TextLabel")
+            titleESPLbl.Text = "ESP Controls"
+            titleESPLbl.Size = UDim2.new(1,0,0,38)
+            titleESPLbl.Position = UDim2.new(0,0,0,16)
+            titleESPLbl.BackgroundTransparency = 1
+            titleESPLbl.TextColor3 = Color3.fromRGB(210,220,255)
+            titleESPLbl.Font = Enum.Font.GothamBlack
+            titleESPLbl.TextScaled = true
+            titleESPLbl.Parent = mainBox
+
             local btnToggle = Instance.new("TextButton")
             btnToggle.Text = "Enable ESP"
-            btnToggle.Size = UDim2.new(0, 250, 0, 62)
-            btnToggle.Position = UDim2.new(0, 56, 0, 110)
-            btnToggle.BackgroundColor3 = Color3.fromRGB(34,50,120)
+            btnToggle.Size = UDim2.new(1, -40, 0, 54)
+            btnToggle.Position = UDim2.new(0, 20, 0, 72)
+            btnToggle.BackgroundColor3 = Color3.fromRGB(36,48,120)
             btnToggle.TextColor3 = Color3.fromRGB(255,255,255)
             btnToggle.Font = Enum.Font.GothamBold
             btnToggle.TextScaled = true
-            btnToggle.Parent = cf
-            Instance.new("UICorner", btnToggle).CornerRadius = UDim.new(0,14)
-            btnToggle.MouseButton1Click:Connect(function()
-                toggleESP(btnToggle)
-            end)
+            btnToggle.Parent = mainBox
+            Instance.new("UICorner", btnToggle).CornerRadius = UDim.new(0,12)
+            btnToggle.MouseButton1Click:Connect(function() toggleESP(btnToggle) end)
+
             local colorBtn = Instance.new("TextButton")
-            colorBtn.Text = "Colour"
-            colorBtn.Size = UDim2.new(0, 250, 0, 62)
-            colorBtn.Position = UDim2.new(0, 56, 0, 200)
-            colorBtn.BackgroundColor3 = Color3.fromRGB(34,50,120)
-            colorBtn.TextColor3 = Color3.fromRGB(180,180,255)
+            colorBtn.Text = "Enemy Colour"
+            colorBtn.Size = UDim2.new(1, -40, 0, 54)
+            colorBtn.Position = UDim2.new(0, 20, 0, 140)
+            colorBtn.BackgroundColor3 = enemyColor
+            colorBtn.TextColor3 = Color3.fromRGB(26,22,32)
             colorBtn.Font = Enum.Font.GothamBold
             colorBtn.TextScaled = true
-            colorBtn.Parent = cf
-            Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,14)
+            colorBtn.Parent = mainBox
+            Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,12)
             colorBtn.MouseButton1Click:Connect(function()
                 local preset = {
                     Color3.fromRGB(120,120,255), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255), Color3.fromRGB(255,176,30)
@@ -336,15 +354,47 @@ local function createMainMenu()
                 colorBtn.BackgroundColor3 = enemyColor
                 if espEnabled then updateESP() end
             end)
+
             local allyLbl = Instance.new("TextLabel")
             allyLbl.Text = "Ally color: R:48 G:210 B:108"
-            allyLbl.Size = UDim2.new(0, 220, 0, 38)
-            allyLbl.Position = UDim2.new(0, 58, 0, 275)
+            allyLbl.Size = UDim2.new(1, -22, 0, 32)
+            allyLbl.Position = UDim2.new(0, 12, 0, 210)
             allyLbl.BackgroundTransparency = 1
             allyLbl.TextColor3 = allyColor
             allyLbl.Font = Enum.Font.Gotham
             allyLbl.TextScaled = true
-            allyLbl.Parent = cf
+            allyLbl.Parent = mainBox
+
+        elseif name == "AIMBOT" or name=="MISC" then
+            local mainBox = Instance.new("Frame")
+            mainBox.AnchorPoint = Vector2.new(0.5,0)
+            mainBox.Position = UDim2.new(0.5,0, 0,84)
+            mainBox.Size = UDim2.new(0,400,0,190)
+            mainBox.BackgroundColor3 = Color3.fromRGB(23,30,61)
+            mainBox.BackgroundTransparency = .15
+            mainBox.Parent = cf
+            Instance.new("UICorner", mainBox).CornerRadius = UDim.new(0,17)
+
+            local infoLbl = Instance.new("TextLabel")
+            infoLbl.Text = name .. " features coming soon!"
+            infoLbl.Size = UDim2.new(1,0,0,54)
+            infoLbl.Position = UDim2.new(0,0,0,30)
+            infoLbl.BackgroundTransparency = 1
+            infoLbl.TextColor3 = Color3.fromRGB(220,220,255)
+            infoLbl.Font = Enum.Font.GothamBlack
+            infoLbl.TextScaled = true
+            infoLbl.Parent = mainBox
+
+            local stubBtn = Instance.new("TextButton")
+            stubBtn.Text = "Soon available"
+            stubBtn.Size = UDim2.new(1, -40, 0, 54)
+            stubBtn.Position = UDim2.new(0,20,0,104)
+            stubBtn.BackgroundColor3 = Color3.fromRGB(36,48,120)
+            stubBtn.TextColor3 = Color3.fromRGB(255,255,255)
+            stubBtn.Font = Enum.Font.GothamBold
+            stubBtn.TextScaled = true
+            stubBtn.Parent = mainBox
+            Instance.new("UICorner", stubBtn).CornerRadius = UDim.new(0,12)
         end
     end
     contentFrames[1].Visible = true
