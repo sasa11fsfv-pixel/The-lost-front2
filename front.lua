@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Teams = game:GetService("Teams")
 
 local player = Players.LocalPlayer
 local DISCORD_LINK = "https://discord.gg/fxPe9TZYM7"
@@ -11,6 +12,12 @@ local mainCheatGui, mainCheatFrame, tabHighlight, tabButtons, contentFrames
 local BLOOD = Color3.fromRGB(140,20,34)
 local BLOOD_DARK = Color3.fromRGB(56,22,38)
 local SIDE_BG = Color3.fromRGB(33,18,25)
+
+-- ESP STATE
+local espEnabled = false
+local enemyColor = Color3.fromRGB(255,65,65)
+local allyColor = Color3.fromRGB(48,210,108)
+local espBoxes = {}
 
 local function tweenFrameColors(frame, bg_from, bg_to, duration)
     frame.BackgroundColor3 = bg_from
@@ -152,20 +159,43 @@ local function createKeyMenu(callbackNext)
     end)
 end
 
-local function animateTabHighlight(toIndex)
-    local targetBtn = tabButtons[toIndex]
-    if targetBtn then
-        TweenService:Create(tabHighlight, TweenInfo.new(0.24, Enum.EasingStyle.Quad), {
-            Position = UDim2.new(0, 0, 0, 25 + (toIndex - 1) * 54),
-        }):Play()
+local function clearESP()
+    for _,v in ipairs(espBoxes) do
+        if v and v.Adornee then v:Destroy() end
+    end
+    espBoxes = {}
+end
+
+local function createESPBoxes()
+    clearESP()
+    for _, pl in ipairs(Players:GetPlayers()) do
+        if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and pl.Team ~= nil then
+            local isEnemy = player.Team and (pl.Team ~= player.Team)
+            local box = Instance.new("BoxHandleAdornment")
+            box.Adornee = pl.Character:FindFirstChild("HumanoidRootPart")
+            box.Size = Vector3.new(3, 5, 1.5)
+            box.AlwaysOnTop = true
+            box.ZIndex = 15
+            box.Transparency = 0.7
+            box.Color3 = isEnemy and enemyColor or allyColor
+            box.Parent = workspace.CurrentCamera
+            table.insert(espBoxes, box)
+        end
     end
 end
 
-local function switchTab(idx)
-    for i, frame in ipairs(contentFrames) do
-        frame.Visible = (i == idx)
+local function toggleESP(btn)
+    espEnabled = not espEnabled
+    btn.Text = espEnabled and "Disable ESP" or "Enable ESP"
+    if espEnabled then
+        createESPBoxes()
+    else
+        clearESP()
     end
-    animateTabHighlight(idx)
+end
+
+local function colorToString(c)
+    return string.format("R:%d G:%d B:%d", math.floor(c.r*255), math.floor(c.g*255), math.floor(c.b*255))
 end
 
 local function createMainMenu()
@@ -173,9 +203,8 @@ local function createMainMenu()
     mainCheatGui.Name = "FrontCheatGui_MainMenu"
     mainCheatGui.Parent = player:WaitForChild("PlayerGui")
     mainCheatGui.ResetOnSpawn = false
-
     mainCheatFrame = Instance.new("Frame")
-    mainCheatFrame.Size = UDim2.new(0, 500, 0, 324)
+    mainCheatFrame.Size = UDim2.new(0, 620, 0, 420)
     mainCheatFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     mainCheatFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainCheatFrame.BackgroundColor3 = BLOOD_DARK
@@ -188,15 +217,13 @@ local function createMainMenu()
     corner.CornerRadius = UDim.new(0, 14)
     corner.Parent = mainCheatFrame
 
-
     local side = Instance.new("Frame")
-    side.Size = UDim2.new(0, 132, 1, 0)
+    side.Size = UDim2.new(0, 146, 1, 0)
     side.Position = UDim2.new(0, 0, 0, 0)
     side.BackgroundColor3 = SIDE_BG
     side.BorderSizePixel = 0
     side.Parent = mainCheatFrame
     Instance.new("UICorner", side).CornerRadius = UDim.new(0, 14)
-    
     local logo = Instance.new("TextLabel")
     logo.Text = "Blood\nMenu"
     logo.TextColor3 = BLOOD
@@ -206,18 +233,14 @@ local function createMainMenu()
     logo.Size = UDim2.new(1, 0, 0, 40)
     logo.Font = Enum.Font.GothamBlack
     logo.Parent = side
-
-
     tabHighlight = Instance.new("Frame")
     tabHighlight.Size = UDim2.new(1, -8, 0, 44)
     tabHighlight.Position = UDim2.new(0, 4, 0, 25)
     tabHighlight.BackgroundColor3 = BLOOD
-    tabHighlight.BackgroundTransparency = 0.2
+    tabHighlight.BackgroundTransparency = 0.18
     tabHighlight.BorderSizePixel = 0
     tabHighlight.Parent = side
     Instance.new("UICorner", tabHighlight).CornerRadius = UDim.new(0, 10)
-
-    
     local tabNames = {"ESP", "AIMBOT", "MISC"}
     tabButtons = {}
     for i, name in ipairs(tabNames) do
@@ -233,19 +256,16 @@ local function createMainMenu()
         btn.ZIndex = 11
         btn.Parent = side
         table.insert(tabButtons, btn)
-
         btn.MouseButton1Click:Connect(function()
             switchTab(i)
         end)
     end
-
-
     contentFrames = {}
     for i, name in ipairs(tabNames) do
         local cf = Instance.new("Frame")
         cf.BackgroundTransparency = 1
-        cf.Size = UDim2.new(1, -132, 1, 0)
-        cf.Position = UDim2.new(0, 132, 0, 0)
+        cf.Size = UDim2.new(1, -146, 1, 0)
+        cf.Position = UDim2.new(0, 146, 0, 0)
         cf.Visible = false
         cf.Parent = mainCheatFrame
         table.insert(contentFrames, cf)
@@ -258,8 +278,69 @@ local function createMainMenu()
         title.Size = UDim2.new(1, 0, 0, 38)
         title.Font = Enum.Font.GothamBold
         title.Parent = cf
+       
+        if name == "ESP" then
+            local btnToggle = Instance.new("TextButton")
+            btnToggle.Text = "Enable ESP"
+            btnToggle.Size = UDim2.new(0, 160, 0, 36)
+            btnToggle.Position = UDim2.new(0, 22, 0, 68)
+            btnToggle.BackgroundColor3 = Color3.fromRGB(38,18,19)
+            btnToggle.TextColor3 = Color3.fromRGB(255,255,255)
+            btnToggle.Font = Enum.Font.GothamBold
+            btnToggle.TextScaled = true
+            btnToggle.Parent = cf
+            Instance.new("UICorner", btnToggle).CornerRadius = UDim.new(0,9)
+            btnToggle.MouseButton1Click:Connect(function()
+                toggleESP(btnToggle)
+            end)
+            local colorBtn = Instance.new("TextButton")
+            colorBtn.Text = "Pick Enemy Color: "..colorToString(enemyColor)
+            colorBtn.Size = UDim2.new(0, 220, 0, 36)
+            colorBtn.Position = UDim2.new(0, 22, 0, 118)
+            colorBtn.BackgroundColor3 = enemyColor
+            colorBtn.TextColor3 = Color3.fromRGB(24,23,23)
+            colorBtn.Font = Enum.Font.GothamBold
+            colorBtn.TextScaled = true
+            colorBtn.Parent = cf
+            Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,9)
+            colorBtn.MouseButton1Click:Connect(function()
+                
+                local preset = {
+                    Color3.fromRGB(255,65,65), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255)
+                }
+                local idx = 1
+                for i, c in ipairs(preset) do
+                    if c == enemyColor then idx = i; break end
+                end
+                idx = idx % #preset + 1
+                enemyColor = preset[idx]
+                colorBtn.BackgroundColor3 = enemyColor
+                colorBtn.Text = "Pick Enemy Color: "..colorToString(enemyColor)
+                if espEnabled then createESPBoxes() end
+            end)
+            local allyLbl = Instance.new("TextLabel")
+            allyLbl.Text = "Ally color: "..colorToString(allyColor)
+            allyLbl.Size = UDim2.new(0, 160, 0, 28)
+            allyLbl.Position = UDim2.new(0, 22, 0, 170)
+            allyLbl.BackgroundTransparency = 1
+            allyLbl.TextColor3 = allyColor
+            allyLbl.Font = Enum.Font.Gotham
+            allyLbl.TextScaled = true
+            allyLbl.Parent = cf
+        end
     end
     contentFrames[1].Visible = true
+end
+
+function switchTab(idx)
+    for i, frame in ipairs(contentFrames) do
+        frame.Visible = (i == idx)
+    end
+    if tabHighlight and tabButtons[idx] then
+        TweenService:Create(tabHighlight, TweenInfo.new(0.22, Enum.EasingStyle.Quad), {
+            Position = UDim2.new(0, 4, 0, 25 + (idx - 1) * 54),
+        }):Play()
+    end
 end
 
 UserInputService.InputBegan:Connect(function(input, processed)
@@ -268,6 +349,13 @@ UserInputService.InputBegan:Connect(function(input, processed)
             mainCheatFrame.Visible = not mainCheatFrame.Visible
         end
     end
+end)
+
+Players.PlayerAdded:Connect(function()
+    if espEnabled then createESPBoxes() end
+end)
+Players.PlayerRemoving:Connect(function()
+    if espEnabled then createESPBoxes() end
 end)
 
 createDiscordMenu(function()
