@@ -27,7 +27,7 @@ end
 
 local function createDiscordMenu(callbackNext)
     local gui = Instance.new("ScreenGui")
-    gui.Name = "FrontDiscordMenu"
+    gui.Name = "ZenwareDiscord"
     gui.Parent = player:WaitForChild("PlayerGui")
     gui.ResetOnSpawn = false
     local frame = Instance.new("Frame")
@@ -92,7 +92,7 @@ end
 
 local function createKeyMenu(callbackNext)
     local gui = Instance.new("ScreenGui")
-    gui.Name = "FrontKeyMenu"
+    gui.Name = "ZenwareKey"
     gui.Parent = player:WaitForChild("PlayerGui")
     gui.ResetOnSpawn = false
     local frame = Instance.new("Frame")
@@ -160,52 +160,61 @@ local function createKeyMenu(callbackNext)
     end)
 end
 
+-- Исправленный ESP с кэшем
+local espUpdateConnection = nil
+local espCache = {}
+
 local function clearESP()
-    for _,v in ipairs(espBoxes) do
-        if v and v.Adornee then v:Destroy() end
+    for pl, handle in pairs(espCache) do
+        if handle and handle[1] and handle[1].Parent then handle[1]:Destroy() end
+        espCache[pl] = nil
     end
-    espBoxes = {}
 end
 
-local function createESPBoxes()
-    clearESP()
-    for _, pl in ipairs(Players:GetPlayers()) do
+local function updateESP()
+    for _,pl in ipairs(Players:GetPlayers()) do
         if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and pl.Team ~= nil then
             local isEnemy = player.Team and (pl.Team ~= player.Team)
-            local box = Instance.new("BoxHandleAdornment")
-            box.Adornee = pl.Character:FindFirstChild("HumanoidRootPart")
-            box.Size = Vector3.new(4, 7, 3)
-            box.AlwaysOnTop = true
-            box.ZIndex = 15
-            box.Transparency = 0.1
-            box.Color3 = isEnemy and enemyColor or allyColor
-            box.Parent = workspace.CurrentCamera
-            table.insert(espBoxes, box)
+            local color = isEnemy and enemyColor or allyColor
+            if not espCache[pl] or not espCache[pl][1] or not espCache[pl][1].Parent then
+                -- Создать новый Box
+                local box = Instance.new("BoxHandleAdornment")
+                box.Adornee = pl.Character.HumanoidRootPart
+                box.Size = Vector3.new(4, 7, 3)
+                box.AlwaysOnTop = true
+                box.ZIndex = 15
+                box.Transparency = 0.14
+                box.Color3 = color
+                box.Parent = workspace.CurrentCamera
+                espCache[pl] = {box}
+            else
+                -- Обновить существующий Box
+                espCache[pl][1].Adornee = pl.Character.HumanoidRootPart
+                espCache[pl][1].Color3 = color
+                espCache[pl][1].Visible = true
+            end
+        else
+            if espCache[pl] and espCache[pl][1] and espCache[pl][1].Parent then
+                espCache[pl][1]:Destroy()
+            end
+            espCache[pl] = nil
+        end
+    end
+    -- Удалить Box'ы у покинувших игроков
+    for pl,handle in pairs(espCache) do
+        if not Players:FindFirstChild(pl.Name) then
+            if handle and handle[1] and handle[1].Parent then handle[1]:Destroy() end
+            espCache[pl] = nil
         end
     end
 end
 
-local espUpdateConnection = nil
 local function startESP()
     clearESP()
     espEnabled = true
     if espUpdateConnection then espUpdateConnection:Disconnect() end
     espUpdateConnection = RunService.RenderStepped:Connect(function()
-        clearESP()
-        for _, pl in ipairs(Players:GetPlayers()) do
-            if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and pl.Team ~= nil then
-                local isEnemy = player.Team and (pl.Team ~= player.Team)
-                local box = Instance.new("BoxHandleAdornment")
-                box.Adornee = pl.Character:FindFirstChild("HumanoidRootPart")
-                box.Size = Vector3.new(4, 7, 3)
-                box.AlwaysOnTop = true
-                box.ZIndex = 15
-                box.Transparency = 0.14
-                box.Color3 = isEnemy and enemyColor or allyColor
-                box.Parent = workspace.CurrentCamera
-                table.insert(espBoxes, box)
-            end
-        end
+        updateESP()
     end)
 end
 
@@ -231,7 +240,7 @@ end
 
 local function createMainMenu()
     mainCheatGui = Instance.new("ScreenGui")
-    mainCheatGui.Name = "FrontCheatGui_MainMenu"
+    mainCheatGui.Name = "ZenwareMainMenu"
     mainCheatGui.Parent = player:WaitForChild("PlayerGui")
     mainCheatGui.ResetOnSpawn = false
     mainCheatFrame = Instance.new("Frame")
@@ -344,7 +353,7 @@ local function createMainMenu()
                 idx = idx % #preset + 1
                 enemyColor = preset[idx]
                 colorBtn.BackgroundColor3 = enemyColor
-                if espEnabled then createESPBoxes() end
+                if espEnabled then updateESP() end
             end)
             local allyLbl = Instance.new("TextLabel")
             allyLbl.Text = "Ally color: R:48 G:210 B:108"
@@ -380,10 +389,10 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 Players.PlayerAdded:Connect(function()
-    if espEnabled then createESPBoxes() end
+    if espEnabled then updateESP() end
 end)
 Players.PlayerRemoving:Connect(function()
-    if espEnabled then createESPBoxes() end
+    if espEnabled then updateESP() end
 end)
 
 createDiscordMenu(function()
