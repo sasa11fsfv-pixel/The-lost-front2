@@ -3,6 +3,7 @@ local StarterGui = game:GetService("StarterGui")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Teams = game:GetService("Teams")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local DISCORD_LINK = "https://discord.gg/fxPe9TZYM7"
@@ -173,10 +174,10 @@ local function createESPBoxes()
             local isEnemy = player.Team and (pl.Team ~= player.Team)
             local box = Instance.new("BoxHandleAdornment")
             box.Adornee = pl.Character:FindFirstChild("HumanoidRootPart")
-            box.Size = Vector3.new(3, 5, 1.5)
+            box.Size = Vector3.new(4, 7, 3)
             box.AlwaysOnTop = true
             box.ZIndex = 15
-            box.Transparency = 0.7
+            box.Transparency = 0.1
             box.Color3 = isEnemy and enemyColor or allyColor
             box.Parent = workspace.CurrentCamera
             table.insert(espBoxes, box)
@@ -184,13 +185,43 @@ local function createESPBoxes()
     end
 end
 
-local function toggleESP(btn)
-    espEnabled = not espEnabled
-    btn.Text = espEnabled and "Disable ESP" or "Enable ESP"
-    if espEnabled then
-        createESPBoxes()
-    else
+local espUpdateConnection = nil
+local function startESP()
+    clearESP()
+    espEnabled = true
+    if espUpdateConnection then espUpdateConnection:Disconnect() end
+    espUpdateConnection = RunService.RenderStepped:Connect(function()
         clearESP()
+        for _, pl in ipairs(Players:GetPlayers()) do
+            if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and pl.Team ~= nil then
+                local isEnemy = player.Team and (pl.Team ~= player.Team)
+                local box = Instance.new("BoxHandleAdornment")
+                box.Adornee = pl.Character:FindFirstChild("HumanoidRootPart")
+                box.Size = Vector3.new(4, 7, 3)
+                box.AlwaysOnTop = true
+                box.ZIndex = 15
+                box.Transparency = 0.14
+                box.Color3 = isEnemy and enemyColor or allyColor
+                box.Parent = workspace.CurrentCamera
+                table.insert(espBoxes, box)
+            end
+        end
+    end)
+end
+
+local function stopESP()
+    espEnabled = false
+    clearESP()
+    if espUpdateConnection then espUpdateConnection:Disconnect() espUpdateConnection = nil end
+end
+
+local function toggleESP(btn)
+    if not espEnabled then
+        btn.Text = "Disable ESP"
+        startESP()
+    else
+        btn.Text = "Enable ESP"
+        stopESP()
     end
 end
 
@@ -225,7 +256,7 @@ local function createMainMenu()
     side.Parent = mainCheatFrame
     Instance.new("UICorner", side).CornerRadius = UDim.new(0, 14)
     local logo = Instance.new("TextLabel")
-    logo.Text = "Blood\nMenu"
+    logo.Text = "Zenware\nMenu"
     logo.TextColor3 = BLOOD
     logo.TextScaled = true
     logo.BackgroundTransparency = 1
@@ -270,7 +301,7 @@ local function createMainMenu()
         cf.Parent = mainCheatFrame
         table.insert(contentFrames, cf)
         local title = Instance.new("TextLabel")
-        title.Text = name .. " Options"
+        title.Text = "Zenware | " .. name .. " Options"
         title.TextColor3 = Color3.fromRGB(255, 51 + (i-1)*60, 60 + (i-1)*60)
         title.TextScaled = true
         title.BackgroundTransparency = 1
