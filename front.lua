@@ -16,9 +16,10 @@ local SIDE_BG = Color3.fromRGB(33,18,25)
 
 -- ESP STATE
 local espEnabled = false
-local enemyColor = Color3.fromRGB(255,65,65)
+local enemyColor = Color3.fromRGB(120,120,255)  -- синий по дефолту
 local allyColor = Color3.fromRGB(48,210,108)
 local espBoxes = {}
+local espUpdateConnection = nil
 
 local function tweenFrameColors(frame, bg_from, bg_to, duration)
     frame.BackgroundColor3 = bg_from
@@ -161,50 +162,26 @@ local function createKeyMenu(callbackNext)
 end
 
 -- Исправленный ESP с кэшем
-local espUpdateConnection = nil
-local espCache = {}
-
 local function clearESP()
-    for pl, handle in pairs(espCache) do
-        if handle and handle[1] and handle[1].Parent then handle[1]:Destroy() end
-        espCache[pl] = nil
-    end
+    for _,v in ipairs(espBoxes) do if v then v:Destroy() end end
+    espBoxes = {}
 end
 
 local function updateESP()
+    clearESP()
     for _,pl in ipairs(Players:GetPlayers()) do
         if pl ~= player and pl.Character and pl.Character:FindFirstChild("HumanoidRootPart") and pl.Team ~= nil then
             local isEnemy = player.Team and (pl.Team ~= player.Team)
             local color = isEnemy and enemyColor or allyColor
-            if not espCache[pl] or not espCache[pl][1] or not espCache[pl][1].Parent then
-                -- Создать новый Box
-                local box = Instance.new("BoxHandleAdornment")
-                box.Adornee = pl.Character.HumanoidRootPart
-                box.Size = Vector3.new(4, 7, 3)
-                box.AlwaysOnTop = true
-                box.ZIndex = 15
-                box.Transparency = 0.14
-                box.Color3 = color
-                box.Parent = workspace.CurrentCamera
-                espCache[pl] = {box}
-            else
-                -- Обновить существующий Box
-                espCache[pl][1].Adornee = pl.Character.HumanoidRootPart
-                espCache[pl][1].Color3 = color
-                espCache[pl][1].Visible = true
-            end
-        else
-            if espCache[pl] and espCache[pl][1] and espCache[pl][1].Parent then
-                espCache[pl][1]:Destroy()
-            end
-            espCache[pl] = nil
-        end
-    end
-    -- Удалить Box'ы у покинувших игроков
-    for pl,handle in pairs(espCache) do
-        if not Players:FindFirstChild(pl.Name) then
-            if handle and handle[1] and handle[1].Parent then handle[1]:Destroy() end
-            espCache[pl] = nil
+            local box = Instance.new("BoxHandleAdornment")
+            box.Adornee = pl.Character.HumanoidRootPart
+            box.Size = Vector3.new(4, 7, 3)
+            box.AlwaysOnTop = true
+            box.ZIndex = 15
+            box.Transparency = 0.08
+            box.Color3 = color
+            box.Parent = workspace.CurrentCamera
+            table.insert(espBoxes, box)
         end
     end
 end
@@ -213,9 +190,7 @@ local function startESP()
     clearESP()
     espEnabled = true
     if espUpdateConnection then espUpdateConnection:Disconnect() end
-    espUpdateConnection = RunService.RenderStepped:Connect(function()
-        updateESP()
-    end)
+    espUpdateConnection = RunService.RenderStepped:Connect(updateESP)
 end
 
 local function stopESP()
@@ -260,7 +235,7 @@ local function createMainMenu()
     local side = Instance.new("Frame")
     side.Size = UDim2.new(0, 180, 1, 0)
     side.Position = UDim2.new(0, 0, 0, 0)
-    side.BackgroundColor3 = SIDE_BG
+    side.BackgroundColor3 = Color3.fromRGB(47,55,105) -- синийфон
     side.BorderSizePixel = 0
     side.Parent = mainCheatFrame
     Instance.new("UICorner", side).CornerRadius = UDim.new(0, 14)
@@ -288,15 +263,21 @@ local function createMainMenu()
         btn.Text = name
         btn.Size = UDim2.new(1, -16, 0, 56)
         btn.Position = UDim2.new(0, 8, 0, 32 + (i - 1) * 70)
-        btn.BackgroundTransparency = 1
-        btn.TextColor3 = Color3.fromRGB(220, 200, 200)
+        btn.BackgroundTransparency = 0.18
+        btn.BackgroundColor3 = Color3.fromRGB(34,50,120)
+        btn.TextColor3 = i==1 and Color3.fromRGB(255,255,255) or Color3.fromRGB(222,230,255)
         btn.Font = Enum.Font.GothamBold
+        btn.TextStrokeTransparency = .7
         btn.TextScaled = true
         btn.Name = "Tab"..i
         btn.ZIndex = 11
         btn.Parent = side
         table.insert(tabButtons, btn)
         btn.MouseButton1Click:Connect(function()
+            for n, tbtn in ipairs(tabButtons) do
+              tbtn.TextColor3 = n == i and Color3.fromRGB(255,255,255) or Color3.fromRGB(222,230,255)
+              tbtn.Font = Enum.Font.GothamBold
+            end
             switchTab(i)
         end)
     end
@@ -323,7 +304,7 @@ local function createMainMenu()
             btnToggle.Text = "Enable ESP"
             btnToggle.Size = UDim2.new(0, 250, 0, 62)
             btnToggle.Position = UDim2.new(0, 56, 0, 110)
-            btnToggle.BackgroundColor3 = Color3.fromRGB(38,18,19)
+            btnToggle.BackgroundColor3 = Color3.fromRGB(34,50,120)
             btnToggle.TextColor3 = Color3.fromRGB(255,255,255)
             btnToggle.Font = Enum.Font.GothamBold
             btnToggle.TextScaled = true
@@ -336,15 +317,15 @@ local function createMainMenu()
             colorBtn.Text = "Colour"
             colorBtn.Size = UDim2.new(0, 250, 0, 62)
             colorBtn.Position = UDim2.new(0, 56, 0, 200)
-            colorBtn.BackgroundColor3 = enemyColor
-            colorBtn.TextColor3 = Color3.fromRGB(24,23,23)
+            colorBtn.BackgroundColor3 = Color3.fromRGB(34,50,120)
+            colorBtn.TextColor3 = Color3.fromRGB(180,180,255)
             colorBtn.Font = Enum.Font.GothamBold
             colorBtn.TextScaled = true
             colorBtn.Parent = cf
             Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,14)
             colorBtn.MouseButton1Click:Connect(function()
                 local preset = {
-                    Color3.fromRGB(255,65,65), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255), Color3.fromRGB(255,176,30)
+                    Color3.fromRGB(120,120,255), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255), Color3.fromRGB(255,176,30)
                 }
                 local idx = 1
                 for i, c in ipairs(preset) do
