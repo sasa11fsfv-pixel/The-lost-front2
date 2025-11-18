@@ -204,7 +204,7 @@ local function createMainMenu()
     mainCheatGui.Parent = player:WaitForChild("PlayerGui")
     mainCheatGui.ResetOnSpawn = false
     mainCheatFrame = Instance.new("Frame")
-    mainCheatFrame.Size = UDim2.new(0, 620, 0, 420)
+    mainCheatFrame.Size = UDim2.new(0, 800, 0, 500)
     mainCheatFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
     mainCheatFrame.AnchorPoint = Vector2.new(0.5, 0.5)
     mainCheatFrame.BackgroundColor3 = BLOOD_DARK
@@ -218,7 +218,7 @@ local function createMainMenu()
     corner.Parent = mainCheatFrame
 
     local side = Instance.new("Frame")
-    side.Size = UDim2.new(0, 146, 1, 0)
+    side.Size = UDim2.new(0, 180, 1, 0)
     side.Position = UDim2.new(0, 0, 0, 0)
     side.BackgroundColor3 = SIDE_BG
     side.BorderSizePixel = 0
@@ -229,25 +229,25 @@ local function createMainMenu()
     logo.TextColor3 = BLOOD
     logo.TextScaled = true
     logo.BackgroundTransparency = 1
-    logo.Position = UDim2.new(0, 0, 0, 12)
-    logo.Size = UDim2.new(1, 0, 0, 40)
+    logo.Position = UDim2.new(0, 0, 0, 20)
+    logo.Size = UDim2.new(1, 0, 0, 58)
     logo.Font = Enum.Font.GothamBlack
     logo.Parent = side
     tabHighlight = Instance.new("Frame")
-    tabHighlight.Size = UDim2.new(1, -8, 0, 44)
-    tabHighlight.Position = UDim2.new(0, 4, 0, 25)
+    tabHighlight.Size = UDim2.new(1, -8, 0, 56)
+    tabHighlight.Position = UDim2.new(0, 4, 0, 32)
     tabHighlight.BackgroundColor3 = BLOOD
     tabHighlight.BackgroundTransparency = 0.18
     tabHighlight.BorderSizePixel = 0
     tabHighlight.Parent = side
-    Instance.new("UICorner", tabHighlight).CornerRadius = UDim.new(0, 10)
+    Instance.new("UICorner", tabHighlight).CornerRadius = UDim.new(0, 12)
     local tabNames = {"ESP", "AIMBOT", "MISC"}
     tabButtons = {}
     for i, name in ipairs(tabNames) do
         local btn = Instance.new("TextButton")
         btn.Text = name
-        btn.Size = UDim2.new(1, -12, 0, 44)
-        btn.Position = UDim2.new(0, 6, 0, 25 + (i - 1) * 54)
+        btn.Size = UDim2.new(1, -16, 0, 56)
+        btn.Position = UDim2.new(0, 8, 0, 32 + (i - 1) * 70)
         btn.BackgroundTransparency = 1
         btn.TextColor3 = Color3.fromRGB(220, 200, 200)
         btn.Font = Enum.Font.GothamBold
@@ -264,8 +264,8 @@ local function createMainMenu()
     for i, name in ipairs(tabNames) do
         local cf = Instance.new("Frame")
         cf.BackgroundTransparency = 1
-        cf.Size = UDim2.new(1, -146, 1, 0)
-        cf.Position = UDim2.new(0, 146, 0, 0)
+        cf.Size = UDim2.new(1, -180, 1, 0)
+        cf.Position = UDim2.new(0, 180, 0, 0)
         cf.Visible = false
         cf.Parent = mainCheatFrame
         table.insert(contentFrames, cf)
@@ -274,39 +274,37 @@ local function createMainMenu()
         title.TextColor3 = Color3.fromRGB(255, 51 + (i-1)*60, 60 + (i-1)*60)
         title.TextScaled = true
         title.BackgroundTransparency = 1
-        title.Position = UDim2.new(0, 0, 0, 14)
-        title.Size = UDim2.new(1, 0, 0, 38)
+        title.Position = UDim2.new(0, 0, 0, 22)
+        title.Size = UDim2.new(1, 0, 0, 48)
         title.Font = Enum.Font.GothamBold
         title.Parent = cf
-       
         if name == "ESP" then
             local btnToggle = Instance.new("TextButton")
             btnToggle.Text = "Enable ESP"
-            btnToggle.Size = UDim2.new(0, 160, 0, 36)
-            btnToggle.Position = UDim2.new(0, 22, 0, 68)
+            btnToggle.Size = UDim2.new(0, 250, 0, 62)
+            btnToggle.Position = UDim2.new(0, 56, 0, 110)
             btnToggle.BackgroundColor3 = Color3.fromRGB(38,18,19)
             btnToggle.TextColor3 = Color3.fromRGB(255,255,255)
             btnToggle.Font = Enum.Font.GothamBold
             btnToggle.TextScaled = true
             btnToggle.Parent = cf
-            Instance.new("UICorner", btnToggle).CornerRadius = UDim.new(0,9)
+            Instance.new("UICorner", btnToggle).CornerRadius = UDim.new(0,14)
             btnToggle.MouseButton1Click:Connect(function()
                 toggleESP(btnToggle)
             end)
             local colorBtn = Instance.new("TextButton")
-            colorBtn.Text = "Pick Enemy Color: "..colorToString(enemyColor)
-            colorBtn.Size = UDim2.new(0, 220, 0, 36)
-            colorBtn.Position = UDim2.new(0, 22, 0, 118)
+            colorBtn.Text = "Colour"
+            colorBtn.Size = UDim2.new(0, 250, 0, 62)
+            colorBtn.Position = UDim2.new(0, 56, 0, 200)
             colorBtn.BackgroundColor3 = enemyColor
             colorBtn.TextColor3 = Color3.fromRGB(24,23,23)
             colorBtn.Font = Enum.Font.GothamBold
             colorBtn.TextScaled = true
             colorBtn.Parent = cf
-            Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,9)
+            Instance.new("UICorner", colorBtn).CornerRadius = UDim.new(0,14)
             colorBtn.MouseButton1Click:Connect(function()
-                
                 local preset = {
-                    Color3.fromRGB(255,65,65), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255)
+                    Color3.fromRGB(255,65,65), Color3.fromRGB(210,80,210), Color3.fromRGB(180,255,60), Color3.fromRGB(60,160,255), Color3.fromRGB(255,176,30)
                 }
                 local idx = 1
                 for i, c in ipairs(preset) do
@@ -315,13 +313,12 @@ local function createMainMenu()
                 idx = idx % #preset + 1
                 enemyColor = preset[idx]
                 colorBtn.BackgroundColor3 = enemyColor
-                colorBtn.Text = "Pick Enemy Color: "..colorToString(enemyColor)
                 if espEnabled then createESPBoxes() end
             end)
             local allyLbl = Instance.new("TextLabel")
-            allyLbl.Text = "Ally color: "..colorToString(allyColor)
-            allyLbl.Size = UDim2.new(0, 160, 0, 28)
-            allyLbl.Position = UDim2.new(0, 22, 0, 170)
+            allyLbl.Text = "Ally color: R:48 G:210 B:108"
+            allyLbl.Size = UDim2.new(0, 220, 0, 38)
+            allyLbl.Position = UDim2.new(0, 58, 0, 275)
             allyLbl.BackgroundTransparency = 1
             allyLbl.TextColor3 = allyColor
             allyLbl.Font = Enum.Font.Gotham
@@ -338,7 +335,7 @@ function switchTab(idx)
     end
     if tabHighlight and tabButtons[idx] then
         TweenService:Create(tabHighlight, TweenInfo.new(0.22, Enum.EasingStyle.Quad), {
-            Position = UDim2.new(0, 4, 0, 25 + (idx - 1) * 54),
+            Position = UDim2.new(0, 4, 0, 32 + (idx - 1) * 70),
         }):Play()
     end
 end
